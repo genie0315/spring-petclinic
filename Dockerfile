@@ -12,7 +12,7 @@ COPY ./jenkins-in-docker-install.sh jenkins-in-docker-install.sh
 RUN chmod u+x jenkins-in-docker-install.sh && ./jenkins-in-docker-install.sh
 
 # Jenkins 사용자 도커 그룹에 추가
-RUN groupadd -g 999 docker_host || true && usermod -aG docker jenkins
+RUN groupadd -g 999 docker_host || true && getent group docker || groupadd docker && usermod -aG docker jenkins
 
 # kubectl을 다운받아서 /usr/local/bin에 추가
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
