@@ -55,7 +55,21 @@ pipeline {
                 } 
             }    
         }    
-        
+        stage('Kubernetes Deploy') {
+        steps {
+            echo 'Deploying to Kubernetes Cluster...'
+            
+            // 방금 빌드/푸시한 젠킨스 커스텀 이미지 컨테이너 내부에서 kubectl 실행
+            sh """
+                docker run --rm \
+                  -v /var/run/docker.sock:/var/run/docker.sock \
+                  -v /root/.kube:/root/.kube \
+                  ${IMAGE_NAME}:${TAG} \
+                  sh -c "kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
+                         kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
+            """
+        }
+    }
         // Kubernetes를 이용한 배포 (SSH 대신 적용)
         stage('Kubernetes Deploy') {
             steps {
