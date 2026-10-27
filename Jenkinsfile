@@ -55,11 +55,11 @@ pipeline {
                 } 
             }    
         }    
-        stage('Kubernetes Deploy') {
+        // Kubernetes를 이용한 배포 (도커 이미지 내부 환경 사용)
+    stage('Kubernetes Deploy') {
         steps {
             echo 'Deploying to Kubernetes Cluster...'
             
-            // 방금 빌드/푸시한 젠킨스 커스텀 이미지 컨테이너 내부에서 kubectl 실행
             sh """
                 docker run --rm \
                   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -70,7 +70,6 @@ pipeline {
             """
         }
     }
- }      
         // Kubernetes를 이용한 배포 (SSH 대신 적용)
                 
                 // 1. 디플로이먼트의 이미지를 최신 버전으로 교체
