@@ -16,7 +16,7 @@ pipeline {
             steps {
                 echo 'Git Clone'
                 git url: 'https://github.com/genie0315/spring-petclinic.git',
-                branch: 'main'
+                    branch: 'main'
             }
         }
         // Maven을 이용한 Build
@@ -27,13 +27,13 @@ pipeline {
             }
         }
         // Docker Image 생성
-        stage ('Docker Image Create') {
+        stage('Docker Image Create') {
             steps {
-            echo 'Docker Image Create'
-            sh '''
-                docker build -t spring-petclinic:${BUILD_NUMBER} .
-                docker tag spring-petclinic:${BUILD_NUMBER} ${IMAGE_NAME}:${TAG}
-            '''
+                echo 'Docker Image Create'
+                sh '''
+                    docker build -t spring-petclinic:${BUILD_NUMBER} .
+                    docker tag spring-petclinic:${BUILD_NUMBER} ${IMAGE_NAME}:${TAG}
+                '''
             }
         }    
         // Dockerhub Image Push
@@ -49,25 +49,26 @@ pipeline {
             post {
                 always {
                     sh '''
-                    docker rmi -f spring-petclinic:${BUILD_NUMBER}
-                    docker rmi -f ${IMAGE_NAME}:${TAG}
+                        docker rmi -f spring-petclinic:${BUILD_NUMBER}
+                        docker rmi -f ${IMAGE_NAME}:${TAG}
                     '''
                 } 
             }    
         }    
         // Kubernetes를 이용한 배포 (도커 이미지 내부 환경 사용)
-    stage('Kubernetes Deploy') {
-        steps {
-            echo 'Deploying to Kubernetes Cluster...'
-            
-            sh """
-                docker run --rm \
-                  -v /var/run/docker.sock:/var/run/docker.sock \
-                  -v /root/.kube:/root/.kube \
-                  ${IMAGE_NAME}:${TAG} \
-                  sh -c "kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
-                         kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
-            """
+        stage('Kubernetes Deploy') {
+            steps {
+                echo 'Deploying to Kubernetes Cluster...'
+                
+                sh """
+                    docker run --rm \
+                      -v /var/run/docker.sock:/var/run/docker.sock \
+                      -v /root/.kube:/root/.kube \
+                      ${IMAGE_NAME}:${TAG} \
+                      sh -c "kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
+                             kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
+                """
+            }
         }
     }
- }
+}
