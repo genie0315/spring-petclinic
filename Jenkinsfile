@@ -71,16 +71,13 @@ pipeline {
         }
     }
         // Kubernetes를 이용한 배포 (SSH 대신 적용)
-        stage('Kubernetes Deploy') {
-            steps {
-                echo 'Deploying to Kubernetes Cluster...'
                 
                 // 1. 디플로이먼트의 이미지를 최신 버전으로 교체
                 sh "kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns"
                 
                 // 2. 변경된 내용 적용을 위한 롤아웃 재시작
                 sh "kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
-            }
-        }
+        
+        
     }
 }
