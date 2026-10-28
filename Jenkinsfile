@@ -11,14 +11,8 @@ pipeline {
     }
     
     stages {
-        // Github로부터 소스코드 다운로드
-        stage('Git Clone') {
-            steps {
-                echo 'Git Clone'
-                git url: 'https://github.com/genie0315/spring-petclinic.git',
-                    branch: 'main'
-            }
-        }
+        // [삭제 완료] 젠킨스가 SCM 설정으로 이미 코드를 받아오므로 Git Clone 단계는 필요 없습니다.
+
         // Maven을 이용한 Build
         stage('Maven Build') {
             steps {
@@ -66,7 +60,7 @@ pipeline {
                       -v /home/ubuntu/.kube:/root/.kube \
                       ${IMAGE_NAME}:${TAG} \
                       sh -c "kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
-                             kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
+                            kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
                 """
             }
         }
