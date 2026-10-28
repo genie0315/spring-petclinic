@@ -11,7 +11,19 @@ pipeline {
     }
     
     stages {
-        // 젠킨스가 기본으로 가져온 소스코드를 바로 활용하여 Maven Build 시작
+        // 1. Git 클론을 젠킨스 자동 설정에 맡기지 않고 직접 수행
+        stage('Git Checkout') {
+            steps {
+                sh 'rm -rf * .git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[url: 'https://github.com/genie0315/spring-petclinic.git']]
+                ])
+            }
+        }
+
+        // 2. Maven Build
         stage('Maven Build') {
             steps {
                 echo 'Maven Build'
@@ -19,7 +31,7 @@ pipeline {
             }
         }
 
-        // Docker Image 생성
+        // 3. Docker Image 생성
         stage('Docker Image Create') {
             steps {
                 echo 'Docker Image Create'
@@ -30,7 +42,7 @@ pipeline {
             }
         }    
 
-        // Dockerhub Image Push
+        // 4. Dockerhub Image Push
         stage('Docker Image Push') {
             steps {
                 echo 'Docker Image Push'
@@ -47,7 +59,7 @@ pipeline {
             }    
         }    
 
-        // Kubernetes 배포 (호스트 kubectl 직접 활용)
+        // 5. Kubernetes 배포
         stage('Kubernetes Deploy') {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
