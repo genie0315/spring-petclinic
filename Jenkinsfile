@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+        skipDefaultCheckout() // 젠킨스 자동 중복 체크아웃을 막아 Git 충돌 원천 차단
+    }
     tools {
         jdk 'JDK21'
         maven 'M3'
@@ -11,7 +14,7 @@ pipeline {
     }
     
     stages {
-        // Maven Build (젠킨스 기본 SCM이 가져온 코드를 직접 사용)
+        // Maven Build (젠킨스 SCM 설정이 처음에 가져온 소스코드를 그대로 활용)
         stage('Maven Build') {
             steps {
                 echo 'Maven Build'
