@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+        skipDefaultCheckout() // 자동 중복 체크아웃을 막아 Git 충돌을 원천 차단합니다.
+    }
     tools {
         jdk 'JDK21'
         maven 'M3'
