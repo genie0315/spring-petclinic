@@ -63,8 +63,7 @@ pipeline {
                 sh """
                     docker run --rm \
                       -v /var/run/docker.sock:/var/run/docker.sock \
-                      -v /root/.kube:/root/.kube \
-                      -e KUBECONFIG=/home/.kube/config \
+                      -v /home/ubuntu/.kube:/root/.kube \
                       ${IMAGE_NAME}:${TAG} \
                       sh -c "kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
                              kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
