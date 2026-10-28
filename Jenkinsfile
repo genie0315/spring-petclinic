@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    options {
-        skipDefaultCheckout() // 자동 중복 체크아웃 방지
-    }
     tools {
         jdk 'JDK21'
         maven 'M3'
@@ -14,14 +11,7 @@ pipeline {
     }
     
     stages {
-        // Github로부터 소스코드 다운로드
-        stage('Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
-
-        // Maven을 이용한 Build
+        // Maven을 이용한 Build (자동 SCM 체크아웃된 소스코드를 그대로 사용)
         stage('Maven Build') {
             steps {
                 echo 'Maven Build'
