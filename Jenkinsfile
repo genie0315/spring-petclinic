@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+        skipDefaultCheckout() // 젠킨스 고유의 자동 체크아웃 충돌 원천 차단
+    }
     tools {
         jdk 'JDK21'
         maven 'M3'
@@ -11,7 +14,14 @@ pipeline {
     }
     
     stages {
-        // Maven을 이용한 Build (자동 SCM 체크아웃된 소스코드를 그대로 사용)
+        // 명시적으로 안전한 체크아웃 수행
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
+        // Maven을 이용한 Build
         stage('Maven Build') {
             steps {
                 echo 'Maven Build'
