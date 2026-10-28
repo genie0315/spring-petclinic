@@ -1,7 +1,7 @@
 pipeline {
     agent any
     options {
-        skipDefaultCheckout() // 자동 중복 체크아웃을 막아 Git 충돌을 원천 차단합니다.
+        skipDefaultCheckout() // 자동 중복 체크아웃 방지
     }
     tools {
         jdk 'JDK21'
@@ -14,7 +14,12 @@ pipeline {
     }
     
     stages {
-        // [삭제 완료] 젠킨스가 SCM 설정으로 이미 코드를 받아오므로 Git Clone 단계는 필요 없습니다.
+        // Github로부터 소스코드 다운로드
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
 
         // Maven을 이용한 Build
         stage('Maven Build') {
@@ -23,6 +28,7 @@ pipeline {
                 sh 'mvn -Dmaven.test.failure.ignore=true clean package'
             }
         }
+
         // Docker Image 생성
         stage('Docker Image Create') {
             steps {
@@ -33,14 +39,12 @@ pipeline {
                 '''
             }
         }    
+
         // Dockerhub Image Push
         stage('Docker Image Push') {
             steps {
                 echo 'Docker Image Push'
-                // Docker Login
                 sh 'echo ${DOCKERHUB_CRED_PSW} | docker login -u ${DOCKERHUB_CRED_USR} --password-stdin'
-
-                // Docker Hub Push
                 sh 'docker image push ${IMAGE_NAME}:${TAG}'
             } 
             post {
@@ -52,18 +56,19 @@ pipeline {
                 } 
             }    
         }    
-        // Kubernetes를 이용한 배포 (도커 이미지 내부 환경 사용)
+
+        // Kubernetes를 이용한 배포
         stage('Kubernetes Deploy') {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
-                
                 sh """
                     docker run --rm \
                       -v /var/run/docker.sock:/var/run/docker.sock \
                       -v /home/ubuntu/.kube:/root/.kube \
+                      -e KUBECONFIG=/root/.kube/config \
                       ${IMAGE_NAME}:${TAG} \
-                      sh -c "kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
-                            kubectl rollout restart deployment/spring-petclinic -n clinic-ns"
+                      sh -c "kubectl --kubeconfig=/root/.kube/config set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
+                            kubectl --kubeconfig=/root/.kube/config rollout restart deployment/spring-petclinic -n clinic-ns"
                 """
             }
         }
