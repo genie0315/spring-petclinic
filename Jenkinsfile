@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    options {
-        skipDefaultCheckout() // 젠킨스 자동 중복 체크아웃 충돌 원천 차단
-    }
     tools {
         jdk 'JDK21'
         maven 'M3'
@@ -14,14 +11,7 @@ pipeline {
     }
     
     stages {
-        // 1. 명시적 SCM 체크아웃
-        stage('Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
-
-        // 2. Maven Build
+        // 젠킨스가 기본으로 가져온 소스코드를 바로 활용하여 Maven Build 시작
         stage('Maven Build') {
             steps {
                 echo 'Maven Build'
@@ -29,7 +19,7 @@ pipeline {
             }
         }
 
-        // 3. Docker Image 생성
+        // Docker Image 생성
         stage('Docker Image Create') {
             steps {
                 echo 'Docker Image Create'
@@ -40,7 +30,7 @@ pipeline {
             }
         }    
 
-        // 4. Dockerhub Image Push
+        // Dockerhub Image Push
         stage('Docker Image Push') {
             steps {
                 echo 'Docker Image Push'
@@ -57,7 +47,7 @@ pipeline {
             }    
         }    
 
-        // 5. Kubernetes 배포 (호스트 kubectl 직접 활용)
+        // Kubernetes 배포 (호스트 kubectl 직접 활용)
         stage('Kubernetes Deploy') {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
