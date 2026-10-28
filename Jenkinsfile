@@ -14,12 +14,8 @@ pipeline {
         // 1. Git 클론을 젠킨스 자동 설정에 맡기지 않고 직접 수행
         stage('Git Checkout') {
             steps {
-                sh 'rm -rf * .git'
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[url: 'https://github.com/genie0315/spring-petclinic.git']]
-                ])
+                echo 'Git Clone'
+                git url: 'https://github.com/sjh4616/spring-petclinic.git', branch: 'main'
             }
         }
 
