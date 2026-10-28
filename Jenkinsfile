@@ -1,7 +1,7 @@
 pipeline {
     agent any
     options {
-        skipDefaultCheckout() // 젠킨스 자동 중복 체크아웃을 막아 Git 충돌 원천 차단
+        skipDefaultCheckout() // 젠킨스 자동 중복 체크아웃 충돌 원천 차단
     }
     tools {
         jdk 'JDK21'
@@ -14,7 +14,14 @@ pipeline {
     }
     
     stages {
-        // Maven Build (젠킨스 SCM 설정이 처음에 가져온 소스코드를 그대로 활용)
+        // 1. 명시적 SCM 체크아웃
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
+        // 2. Maven Build
         stage('Maven Build') {
             steps {
                 echo 'Maven Build'
@@ -22,7 +29,7 @@ pipeline {
             }
         }
 
-        // Docker Image 생성
+        // 3. Docker Image 생성
         stage('Docker Image Create') {
             steps {
                 echo 'Docker Image Create'
@@ -33,7 +40,7 @@ pipeline {
             }
         }    
 
-        // Dockerhub Image Push
+        // 4. Dockerhub Image Push
         stage('Docker Image Push') {
             steps {
                 echo 'Docker Image Push'
@@ -50,18 +57,13 @@ pipeline {
             }    
         }    
 
-        // Kubernetes를 이용한 배포
+        // 5. Kubernetes 배포 (호스트 kubectl 직접 활용)
         stage('Kubernetes Deploy') {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
                 sh """
-                    docker run --rm \
-                      -v /var/run/docker.sock:/var/run/docker.sock \
-                      -v /home/ubuntu/.kube:/root/.kube \
-                      -e KUBECONFIG=/root/.kube/config \
-                      ${IMAGE_NAME}:${TAG} \
-                      sh -c "kubectl --kubeconfig=/root/.kube/config set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns && \
-                            kubectl --kubeconfig=/root/.kube/config rollout restart deployment/spring-petclinic -n clinic-ns"
+                    kubectl set image deployment/spring-petclinic spring-petclinic=${IMAGE_NAME}:${TAG} -n clinic-ns
+                    kubectl rollout restart deployment/spring-petclinic -n clinic-ns
                 """
             }
         }
